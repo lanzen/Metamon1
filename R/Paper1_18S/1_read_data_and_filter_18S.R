@@ -1,5 +1,6 @@
-## Note: change to correct path for local directory (github clone)
-setwd("/home/alanzen/projects/Metamon1/")
+# Change to correct path for local directory (github clone) and uncomment:
+# setwd("/home/alanzen/projects/Metamon1/")
+# 
 
 source('R/utils/filtering.R')
 source('R/utils/diversity.r')
@@ -14,7 +15,7 @@ require(vegan)
 # Read metadata that is common for COI and 18S
 md.all = read.csv(file="SWARM_WP2_all_20200708/metadata.csv", header=T, row.names=1)
 
-# Limit to those samples that have 18S data
+# Limit analysis to those samples that have 18S data
 md.ssuR = md.all[md.all$X18S,] 
 
 # order metadata alphabetically
@@ -31,18 +32,17 @@ otus.18S.all = otus.18S.all[,order(names(otus.18S.all))]
 
 # Put taxonomic classification in a separate vector and remove
 tax.18S=otus.18S.all$classification
- 
 otus.18S.all = otus.18S.all[,-1]
 
-# ------ Make in silico pooled grp for comparison and get proper OTU table -------
+# ------ Make in silico pooled groups for comparison and get proper OTU table -------
 otus.18S.all$X01_10_isPool = rowSums(otus.18S.all[,md.ssuR$Group=="ExtractionRep" & md.ssuR$KitHom=="Precellys1"])
 otus.18S.all$X11_20_isPool = rowSums(otus.18S.all[,md.ssuR$Group=="ExtractionRep" & md.ssuR$KitHom=="Vortex_0.5g"])
 otus.18S.all$X21_24_isPool = rowSums(otus.18S.all[,md.ssuR$Group=="ExtractionRep" & md.ssuR$KitHom=="Vortex_5g"])
 otus.18S.all$X55_64_isPool = rowSums(otus.18S.all[,md.ssuR$Group=="ExtractionRep" & md.ssuR$KitHom=="Precellys2"])
 otus.18S.all$XPCR = rowSums(otus.18S.all[,!is.na(md.ssuR$Group) & md.ssuR$Group=="PCRRepX58"])
 
-# Check name agreement metadata SSU ID vs OTU sample names
-table(names(otus.18S.all) == md.ssuR$SSU_ID) ## <---- All have to be True!
+# Check name agreement metadata SSU ID vs OTU sample names (all should be True)
+table(names(otus.18S.all) == md.ssuR$SSU_ID)
 
 # If all agree, proceed, and change sample names to metadata ones
 names(otus.18S.all) = row.names(md.ssuR)
@@ -55,9 +55,6 @@ summary(rowSums(otus.18S.t))
 # Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 # 9   90500  104600  131900  117900 1094000 
 
-rowSums(otus.18S.t[md.ssuR$Group=="Controls",])
-rowSums(otus.18S.t[md.ssuR$Group=="InSilicoPool",])
-sum(otus.18S.t) #13,062,684 reads
 
 # Write diversity statistics before taxonomic filtering and contaminant removal
 
@@ -81,22 +78,16 @@ for (taxonDel in c("No hits","Insecta","Mammalia","Aves","Myxini",
   }
 }
 
-sum(otus.18S[md.ssuR$Group!="InSilicoPool",])
-dim(otus.18S[md.ssuR$Group!="InSilicoPool",])
-
-
-# Removes 148 No hits OTUs
-# 1 mammal (5 r), 3 spiders (65 r), 9 fish (234 r)
-# leaving 10030 OTUs, 8,960,530 reads
-
+# Filter cross contamination in a manner analogous to UNCROSS (R Edgar)
+# removing all occurences <1% of average occurence
 otus.18S = filterCrossContaminants2(otus.18S,100)
 sum(otus.18S) #13042977
 sum(otus.18S[md.ssuR$Group!="InSilicoPool",]) #8,928,662 
 
-# Relative abundance
+# Transform into relative abundance
 otus.18S.all.ra = decostand(otus.18S, method="total")
 
-# Rel. ab. blanks
+# Investigate composition of blanks
 otus.18S.blank.ra = otus.18S.all.ra[md.ssuR$Group!="InSilicoPool",
                             colSums(otus.18S.all.ra[md.ssuR$Group=="Controls",]) > 0]
 otus.18S.blank = otus.18S[md.ssuR$Group!="InSilicoPool",
@@ -115,9 +106,8 @@ names(otus.18S.blank) = make.names(paste(names(otus.18S.blank),bestTx,sep="_"))
 
 md.noIS$Ctrl = ifelse(md.noIS$Group=="Controls", as.vector(md.noIS$Experiment)
                       , "Sample")
+
 otus.18S.blank.pool = mergeOTUTable(otus.18S.blank, md.noIS, by="Ctrl")
-
-
 otus.18S.blank.pool.ra = decostand(otus.18S.blank.pool, method="total")
 
 onlyInBlank = otus.18S.blank.pool.ra[,otus.18S.blank.pool["Sample",] == 0]# & otus.18S.blank.pool["Mock",] == 0]
@@ -157,6 +147,7 @@ dev.off()
 # look like possible Chytridiomycota, that may be marine (https://www.nature.com/articles/srep30120)
 # SWARM_31 looks more like Choanoflagellida. SWARM_163 again like Svalbard sediment
 
+# Remove suspected contaminants
 true_contaminants = c("SWARM_2513","SWARM_1944","SWARM_1070","SWARM_998") 
 cont = (names(otus.18S) %in% true_contaminants)
 otus.18S = otus.18S[,-cont]
@@ -171,6 +162,8 @@ tax.18SR = tax.18S[colSums(otusR.18S)>0]
 otusR.18S = otusR.18S[,colSums(otusR.18S)>0] 
 dim(otusR.18S) #Retains 10,022
 mdR.18S = droplevels(md.ssuR[md.ssuR$Include,])
+
+# Control that cleaned data coincides with metadata names
 table(row.names(otusR.18S) == row.names(mdR.18S))
 
 write.table(t(otusR.18S), "SWARM_WP2_all_20200708/18S/SWARM_table_filtered.csv", quote=F, sep="\t")
@@ -189,17 +182,16 @@ divR.18S = divR.18S[,c("Reads","Richness","Rarefied.richness","H","J",
 divR.18S.met = read.csv("SWARM_WP2_all_20200708/Diversity_filtered_18S_WP2_met.csv",row.names=1)
 divR.18S.met = divR.18S.met[,c("Reads","Richness","Rarefied.richness","H","J",
                        "Chao1")]
-# ---- Relative abundance ------
+
+# ---- Filter rare sequences below "detection limit" ------
 
 otus.18S.ra.all = decostand(otusR.18S, method="total")
 
 # For dissimilarity, we require a minimum of 3 expected reads assuming average constant relative OTU abundance
+# i.e. an average relative abundance of 6.4E-5 across samples
 minAb = 3 / min(rowSums(otusR.18S)) #min is 46826 so min. is 6.4E-5
 otusR18S.ab = dropRareByAvgAbundance(otusR.18S, minAb)
-dim(otusR18S.ab)/dim(otusR.18S) #770 of 10022 OTUs remain at this cutoff, or 7.7%
-
-divRep = divR.18S[(mdR.18S$Group=="ExtractionRep" | mdR.18S$Group=="PCRRepX58"),]
-
+dim(otusR18S.ab)/dim(otusR.18S) #770 of 10022 OTUs remain at this cutoff
 
 # ------- Taxonomy --------
 

@@ -1,7 +1,8 @@
-setwd("/home/alanzen/projects/Metamon/WP2/SWARM_WP2_all_20200708")
+# Change to correct path for local directory (github clone) and uncomment:
+# setwd("/home/alanzen/projects/Metamon1/")
+# 
 
 require(vegan)
-load(".RData")
 
 table(row.names(otusR.18S) == row.names(mdR.18S))
 

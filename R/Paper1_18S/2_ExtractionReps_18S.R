@@ -1,16 +1,16 @@
-setwd("/home/alanzen/projects/Metamon/WP2/SWARM_WP2_all_20200708")
+# Change to correct path for local directory (github clone) and uncomment:
+# setwd("/home/alanzen/projects/Metamon1/")
+# 
 
 require(vegan)
-require(VennDiagram)
 
-source('../R/utils/heterogeneity_rarefaction_functions.R')
-source('../R/utils/filtering.R')
-source('../R/utils/diversity.r')
-source('../R/utils/correlationTests.r')
-source('../R/utils/taxaplot.R')
-source('../R/utils/mergeOTUTable.R')
+source('R/utils/heterogeneity_rarefaction_functions.R')
+source('R/utils/filtering.R')
+source('R/utils/diversity.r')
+source('R/utils/correlationTests.r')
+source('R/utils/taxaplot.R')
+source('R/utils/mergeOTUTable.R')
 
-load(".RData")
 
 # Check agreement metadata vs OTU samples
 table(row.names(otusR.18S) == row.names(mdR.18S))
@@ -40,7 +40,7 @@ mdReps.18S = droplevels(mdX.18S[mdX.18S$Group=="ExtractionRep",])
 
 # ---------- Compare alpha diversity between treatment  groups -------
 
-## Table 3
+## Data for table 3
 pc1xOut = divX.18S[c(2:10),]
 pc1xOut.met = divX.18S.met[c(2:10),]
 dx = rbind(pc1xOut,divX.18S)
@@ -69,7 +69,7 @@ mdIVPool = droplevels(mdX.18S[mdX.18S$Group=="PooledReps",])[c(1,4,2,3),]
 divISPool = divX.18S.40k[mdX.18S$Group=="InSilicoPool",][c(1,4,2,3),]
 mdISPool = droplevels(mdX.18S[mdX.18S$Group=="InSilicoPool",])[c(1,4,2,3),]
 
-pdf("../img/18S/Fig2_RarefiedRichnessA.pdf",width=3.5,height=5)
+pdf("img/18S/Fig2_RarefiedRichnessA.pdf",width=3.5,height=5)
 kolore=c("red", "green", "blue", "grey")
 boxplot(divReps.18S$Rarefied.richness ~ mdReps.18S$KitHom,
         notch=T, beside=T,las=2, ylim=c(550,1600),
@@ -80,7 +80,7 @@ points(factor(mdIVPool$KitHom), divIVPool$Rarefied.richness, col=mdIVPool$Colour
 dev.off()
 
 
-pdf("../img/18S/Fig2_ShannonB.pdf",width=3.5,height=5)
+pdf("img/18S/Fig2_ShannonB.pdf",width=3.5,height=5)
 kolore=c("red", "green", "blue", "grey")
 boxplot(divReps.18S$H ~ mdReps.18S$KitHom,
         notch=T, beside=T,las=2, #ylim=c(600,1700),
@@ -118,13 +118,10 @@ hc = hclust(vegdist(otusX.18S.abH))
 plot(hc, labels=paste(row.names(mdX.18S),mdX.18S$KitHom), cex=.7)
 # Interstingly has in vitro and in silico pools very close to each other but w longer branch length
 
+## Non-metric dimensional scaling
 nmds = metaMDS(otusX.18S.abH)
 ordiplot(nmds,type="none",xlim=c(-.5,.5),ylim=c(-.2,.6))
 points(nmds,pch=as.numeric(mdX.18S$Group),col=mdX.18S$Colour,lwd=2,cex=1.1)
-#legend("topright",pch=as.numeric(unique(mdX.18S$Group)),legend=unique(mdX.18S$Group),cex=.8)
-#legend("topleft",pch=1,col=unique(mdX.18S$Colour)[c(1,4,2,3,5)],
-   #    legend=unique(mdX.18S$KitHom)[c(1,4,2,3,5)],cex=.8)
-#text(nmds,pos=1,cex=.7,col=as.numeric(mdR.18S$KitHom))
 
 
 for (i in c(1:4)){
@@ -165,9 +162,6 @@ otus.18S.pmX.ab.H = decostand(otus.18S.pmX.ab, method="hell")
 nmds = metaMDS(otus.18S.pmX.ab.H)
 ordiplot(nmds,type="none",xlim=c(-1.5,1.5),ylim=c(-.5,.5))
 points(nmds,pch=as.numeric(mdX.18S$Group),col=mdX.18S$Colour,lwd=2,cex=1.1)
-# legend("topright",pch=as.numeric(unique(mdX.18S$Group)),legend=unique(mdX.18S$Group),cex=.8)
-# legend("topleft",pch=1,col=unique(mdX.18S$Colour)[c(1,4,2,3,5)],
-#        legend=unique(mdX.18S$KitHom)[c(1,4,2,3,5)],cex=.8)
 
 
 for (i in c(1:4)){
@@ -225,7 +219,7 @@ summary(tra$Rank)
 # 13 superkingdoms, 26 kingdoms, 102 phyla, 204 classes, 259 orders, 164 families, 
 # 150 genera
 
-pdf("../img/18S/taxon_barplots_xheterogeneity/Assignmets.pdf",height=9,width=19)
+pdf("img/18S/taxon_barplots_xheterogeneity/Assignmets.pdf",height=9,width=19)
 assignedTaxaRA = decostand(as.data.frame(t(tass[,-c(1:2)])),method="total")
 taxaplot(25,grouping_info,assignedTaxaRA)
 dev.off()
@@ -234,7 +228,7 @@ for (i in c(1:7)){
   r=as.character(ranks$rank[i])
   leveltaxa = as.data.frame(t(tra[tra$Rank==r,-c(1:2)]))
   print(paste(mean(rowSums(leveltaxa))*100,"% classified at rank",r))
-  pdf(paste("../img/18S/taxon_barplots_xheterogeneity/",r,".pdf",sep=""),height=9,width=19)
+  pdf(paste("img/18S/taxon_barplots_xheterogeneity/",r,".pdf",sep=""),height=9,width=19)
   taxaplot(ranks$levels[i],grouping_info,leveltaxa)
   dev.off()
 }
@@ -256,11 +250,10 @@ for (i in c(1:4)){
   r=as.character(ranks$rank[i])
   leveltax.18Sa = as.data.frame(t(tra.met[tra.met$Rank==r,-c(1:2)])) / t(metKingdom)
   print(paste(mean(rowSums(leveltax.18Sa))*100,"% classified at rank",r))
-  pdf(paste("../img/18S/taxon_barplots_xheterogeneity/",r,"_Metazoa.pdf",sep=""),height=7,width=19)
+  pdf(paste("img/18S/taxon_barplots_xheterogeneity/",r,"_Metazoa.pdf",sep=""),height=7,width=19)
   taxaplot(ranks$levels[i],grouping_info,leveltax.18Sa)
   dev.off()
 }
-#77% order but only 2% fam
 
 # ------ Comparing taxa between methods --------
 
@@ -269,27 +262,20 @@ dim(tax.18Sa.comp)
 tax.18Sa.comp = tax.18Sa.comp[rowMeans(tax.18Sa.comp[,-c(1:2)])>1E-4,]
 dim(tax.18Sa.comp) #417 tax.18Sa
 mdc = droplevels(md.comp[md.comp$Experiment=="WP2HomXTest"  & md.comp$Xreps==1,])
-#mdc$method = as.factor(paste(mdc$Homogenisation,mdc$Xkit))
-# mdc$method = gsub("PowerSoil","PS",mdc$method)
-# mdc$method = gsub("PowerMax","PM",mdc$method)
-# mdc$method = gsub("Precellys2","PC2",mdc$method)
 
 for (i in c(1:7)){
   r=as.character(ranks$rank[i])
   leveltax.18Sa = as.data.frame(t(tax.18Sa.comp[tax.18Sa.comp$Rank==r,-c(1:2)]))
   printANOVA(mdc[,c("Xkit","KitHom")], 
              leveltax.18Sa, a = .05/dim(leveltax.18Sa)[2],
-             imgDir="../img/18S/tax.18Sa_systematic_diffs")
+             imgDir="img/18S/tax.18Sa_systematic_diffs")
 }
 
 
 # -------- Resampling by combining N replicates  -------
 
-## 
+
 md.n.18SR=mdX.18S
-# md.n.18SR$KitHom = gsub("PSVortex","Vortex_PS",md.n.18SR$KitHom)
-# md.n.18SR$KitHom = gsub("PMVortex","Vortex_PM",md.n.18SR$KitHom)
-# md.n.18SR$KitHom = gsub("PC2PCRRep","PCRRep",md.n.18SR$KitHom)
 grp = c("Precellys1","Precellys2","Vortex_0.5g","Vortex_5g","PCRRep")
 colour = c("red","green","blue","grey","cyan")
 
@@ -311,19 +297,19 @@ resAll = repeatedSubsamplingPlate1(otus.18S=otusX.18S, res=res, res_p=res_p, res
                           noReps=noReps, iterations=iterations, reads=reads, 
                           classification=tax.18SR)
 
-ppPlot("../img/18S/Pooling_effect_no_Reps_S_40kreads.svg", resAll@total, 
+ppPlot("img/18S/Pooling_effect_no_Reps_S_40kreads.svg", resAll@total, 
        c(600,1600), colour, grp)#)
-ppPlot("../img/18S/Pooling_effect_no_Reps_S_40kreads_non-metazoa.svg", 
+ppPlot("img/18S/Pooling_effect_no_Reps_S_40kreads_non-metazoa.svg", 
        resAll@nonmet, c(500,1400), colour, grp)#)
-ppPlot("../img/18S/Pooling_effect_no_Reps_S_40kreads_metazoa.svg", 
+ppPlot("img/18S/Pooling_effect_no_Reps_S_40kreads_metazoa.svg", 
        resAll@met, c(70,300), colour, grp)#)
 
 
-ppHPlot("../img/18S/Pooling_effect_no_Reps_H_40kreads.svg", resAll@total, 
+ppHPlot("img/18S/Pooling_effect_no_Reps_H_40kreads.svg", resAll@total, 
         c(3.5,5), colour, grp)# customOrder=c(1,5,2:4))
-ppHPlot("../img/18S/Pooling_effect_no_Reps_H_40kreads_non-metazoa.svg", 
+ppHPlot("img/18S/Pooling_effect_no_Reps_H_40kreads_non-metazoa.svg", 
         resAll@nonmet, c(3.9,4.6), colour, grp)#)
-ppHPlot("../img/18S/Pooling_effect_no_Reps_H_40kreads_metazoa.svg", 
+ppHPlot("img/18S/Pooling_effect_no_Reps_H_40kreads_metazoa.svg", 
         resAll@met, c(1,4), colour, grp)#)
 
 
@@ -352,13 +338,13 @@ resAb = repeatedSubsamplingPlate1(otus.18S=otusAb, res=res, res_p=res_p, res_m=r
                             noReps=noReps, iterations=iterations, reads=39750, 
                             classification=classificationAb)
 
-ppPlot("../img/18S/Pooling_effect_no_Reps_S_39kreads_min01p.svg", resAb@total, 
+ppPlot("img/18S/Pooling_effect_no_Reps_S_39kreads_min01p.svg", resAb@total, 
        c(95,125), colour, grp)
 
-ppPlot("../img/18S/Pooling_effect_no_Reps_S_39kreads_min01p_met.svg", resAb@met, 
+ppPlot("img/18S/Pooling_effect_no_Reps_S_39kreads_min01p_met.svg", resAb@met, 
        c(13,33), colour, grp)
 
-ppPlot("../img/18S/Pooling_effect_no_Reps_S_40kreads_min01p_nonmet.svg", resAb@nonmet,
+ppPlot("img/18S/Pooling_effect_no_Reps_S_40kreads_min01p_nonmet.svg", resAb@nonmet,
        c(80,93), colour, grp)
 
 quantile(avgTaxonAbundances, probs=seq(0,1,0.1))
@@ -384,13 +370,13 @@ resAb = repeatedSubsamplingPlate1(otus.18S=otusAb, res=res, res_p=res_p, res_m=r
                             noReps=noReps, iterations=iterations, reads=40000, 
                             classification=classificationAb)
 
-ppPlot("../img/18S/Pooling_effect_no_Reps_S_40kreads_10pMostAb.svg", resAb@total, 
+ppPlot("img/18S/Pooling_effect_no_Reps_S_40kreads_10pMostAb.svg", resAb@total, 
        c(400,850), colour, grp)
 
-ppPlot("../img/18S/Pooling_effect_no_Reps_S_40kreads_10pMostAb_met.svg", resAb@met, 
+ppPlot("img/18S/Pooling_effect_no_Reps_S_40kreads_10pMostAb_met.svg", resAb@met, 
        c(50,170), colour, grp)
 
-ppPlot("../img/18S/Pooling_effect_no_Reps_S_40kreads_10pMostAb_nonmet.svg", resAb@nonmet,
+ppPlot("img/18S/Pooling_effect_no_Reps_S_40kreads_10pMostAb_nonmet.svg", resAb@nonmet,
        c(340,690), colour, grp)
 
 # ----- Beyond 40k rarefaction -----
@@ -444,11 +430,11 @@ sl=2000
 cr = calcRarefaction(otus.18S.pmX,steplength=sl, max=max)
 
 plotRare(rarefied=cr@rarefied, stdev=cr@stdev,
-         file="../img/18S/rarefaction_beyond40k.svg",height=6,width=7,
+         file="img/18S/rarefaction_beyond40k.svg",height=6,width=7,
          ylims=range(300,3000),xlims=c(sl,max),diff=100,colour=colour)
 
 plotRare(rarefied=cr@rarefied, stdev=cr@stdev,
-         file="../img/18S/rarefaction_beyond40k_zoom.svg",height=6,width=7,
+         file="img/18S/rarefaction_beyond40k_zoom.svg",height=6,width=7,
          ylims=c(300,1800),xlims=c(steplength,50000),diff=50,colour=colour)
 
 # ---- Plots (b/w one for each dataset) ----
