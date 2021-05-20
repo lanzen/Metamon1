@@ -265,16 +265,11 @@ summary(betweenGrabs.bc.ssu) # .22 -- .55, med .44
 wilcox.test(betweenGrabs.bc.ssu, igAll.bc.ssu, alternative="greater")
 # -> Yes but close call (p=0.02)
 
-require(vioplot)
 
-boxplot(ssu.intraSub.bc, igAll.bc.ssu, betweenGrabs.bc.ssu, names=c("Btw. extracts same sub-sample",
-                                                        "Btw. pooled intra-grabs",
-                                                        "Btw. grabs"),las=2, notch=T,col="grey")
-
-require(vioplot)
-vioplot(ssu.intraSub.bc, igAll.bc.ssu, betweenGrabs.bc.ssu, names=c("Btw. extracts same sub-sample",
-                                                        "Btw. pooled intra-grabs",
-                                                        "Btw. grabs"),las=2)
+pdf("img/BCBoxplot_for_Fig3_18S.pdf",width=2.5,height=3)
+ggplot(bcDist, aes(x=type, y=bc)) + geom_boxplot(notch=T, outlier.colour="red", outlier.shape=16,
+                                                 outlier.size=3) + geom_jitter(shape=16, position=position_jitter(0.2))
+dev.off()
 
 
 # # ---- Dissimilarity comparisons Metazoa ------
